@@ -1,0 +1,8 @@
+Morning Handover Shift Report - Field Alpha
+Date: September 20, 2026
+
+Well-02 Report:
+Choke adjusted to 36/64. Tubing head pressure (THP) down to 780 psi from 920 psi. Casing head pressure (CHP) noted at 800 psi (annular pressure communication warning). Liquid rate recorded at 380 bopd with BS&W water cut spiking to 72%. Intermittent liquid slugging and minor sand production observed during high-rate testing.
+
+Well-04 Report:
+Choke set at 40/64. THP stable at 650 psi, CHP 200 psi. Liquid rate 1450 bopd. Water cut elevated at 82.5% (artificial lift evaluation recommended).
