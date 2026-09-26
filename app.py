@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import json
+import random
 
 from calculations.ipr import (
     calculate_vogel_qmax,
@@ -20,7 +21,9 @@ from database.db import (
     save_shift_log,
     get_shift_history,
     save_ipr_test,
-    get_ipr_history
+    get_ipr_history,
+    save_user,
+    verify_user
 )
 from utils.document_io import (
     extract_text_from_pdf,
@@ -42,27 +45,81 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- Authentication Wall (Login with Email & Password) ---
+# --- Authentication & OTP State Management ---
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
+if "otp_sent" not in st.session_state:
+    st.session_state["otp_sent"] = False
+if "generated_otp" not in st.session_state:
+    st.session_state["generated_otp"] = ""
+if "pending_email" not in st.session_state:
+    st.session_state["pending_email"] = ""
 
 if not st.session_state["authenticated"]:
-    st.title("🛢️ PetroCalc AI — Secure Enterprise Login")
-    st.markdown("Enter your corporate credentials to access the subsurface asset engineering and operations platform.")
-    
-    with st.form("login_form"):
-        email_input = st.text_input("Corporate Email", value="engineer@petrocalc.ai")
-        password_input = st.text_input("Password", type="password", value="password123")
-        submit_login = st.form_submit_button("Sign In", type="primary")
-        
-        if submit_login:
-            if email_input and password_input:
-                st.session_state["authenticated"] = True
-                st.session_state["user_email"] = email_input
-                st.success("Authentication successful! Loading PetroCalc AI...")
+    st.title("🛢️ PetroCalc AI — Secure Enterprise Portal")
+    st.markdown("Sign in with corporate credentials or register a new account to access subsurface asset engineering.")
+
+    auth_tab1, auth_tab2 = st.tabs(["🔐 Sign In", "📝 Sign Up"])
+
+    with auth_tab1:
+        if not st.session_state["otp_sent"]:
+            with st.form("signin_form"):
+                email_in = st.text_input("Corporate Email", value="engineer@petrocalc.ai")
+                password_in = st.text_input("Password", type="password", value="password123")
+                submit_signin = st.form_submit_button("Proceed to OTP Verification", type="primary")
+
+                if submit_signin:
+                    # Allow default demo credentials or check SQLite db
+                    is_valid = (email_in == "engineer@petrocalc.ai" and password_in == "password123") or verify_user(email_in, password_in)
+                    if is_valid:
+                        otp = str(random.randint(100000, 999999))
+                        st.session_state["generated_otp"] = otp
+                        st.session_state["pending_email"] = email_in
+                        st.session_state["otp_sent"] = True
+                        st.success(f"Credentials verified! Verification Code (OTP) generated for {email_in}.")
+                        st.rerun()
+                    else:
+                        st.error("Invalid email or password. Please check your credentials or Sign Up.")
+        else:
+            st.info(f"📧 A One-Time Password (OTP) has been dispatched to **{st.session_state['pending_email']}**.")
+            # For testing convenience, display the demo OTP clearly
+            st.warning(f"🔑 **[Demo Testing Helper] Your OTP Code is: `{st.session_state['generated_otp']}`**")
+
+            with st.form("otp_form"):
+                entered_otp = st.text_input("Enter 6-Digit OTP Code", max_chars=6)
+                verify_btn = st.form_submit_button("Verify & Sign In", type="primary")
+
+                if verify_btn:
+                    if entered_otp == st.session_state["generated_otp"]:
+                        st.session_state["authenticated"] = True
+                        st.session_state["user_email"] = st.session_state["pending_email"]
+                        st.session_state["otp_sent"] = False
+                        st.success("OTP Verified Successfully! Loading PetroCalc AI...")
+                        st.rerun()
+                    else:
+                        st.error("Invalid OTP code. Please try again.")
+
+            if st.button("⬅️ Back to Sign In"):
+                st.session_state["otp_sent"] = False
                 st.rerun()
-            else:
-                st.error("Please enter both email and password.")
+
+    with auth_tab2:
+        with st.form("signup_form"):
+            new_name = st.text_input("Full Name", value="Dr. Sarah Jenkins")
+            new_email = st.text_input("Corporate Email", value="s.jenkins@petrocalc.ai")
+            new_pass = st.text_input("Password", type="password", value="securepass123")
+            submit_signup = st.form_submit_button("Register Account", type="primary")
+
+            if submit_signup:
+                if new_name and new_email and new_pass:
+                    success = save_user(new_name, new_email, new_pass)
+                    if success:
+                        st.success("Account registered successfully! You can now sign in using your credentials.")
+                    else:
+                        st.error("An account with this email already exists.")
+                else:
+                    st.error("Please fill out all registration fields.")
+
     st.stop()
 
 # App Title Header & User Info

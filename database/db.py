@@ -12,7 +12,7 @@ def get_connection():
 
 def init_db():
     """
-    Initializes the local SQLite database with shift_logs and ipr_tests tables.
+    Initializes the local SQLite database with shift_logs, ipr_tests, and users tables.
     """
     conn = get_connection()
     cursor = conn.cursor()
@@ -46,9 +46,43 @@ def init_db():
         j_index REAL
     )
     """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        full_name TEXT,
+        email TEXT UNIQUE,
+        password TEXT,
+        created_at TEXT
+    )
+    """)
     
     conn.commit()
     conn.close()
+
+def save_user(full_name: str, email: str, password: str) -> bool:
+    init_db()
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        cursor.execute("INSERT INTO users (full_name, email, password, created_at) VALUES (?, ?, ?, ?)",
+                       (full_name, email, password, timestamp))
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        return False
+    finally:
+        conn.close()
+
+def verify_user(email: str, password: str) -> bool:
+    init_db()
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE email = ? AND password = ?", (email, password))
+    user = cursor.fetchone()
+    conn.close()
+    return user is not None
 
 def save_shift_log(well_name: str, parsed_data: dict, anomalies: list):
     init_db()
