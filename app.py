@@ -42,45 +42,39 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- Global CSS: Injected to Match design.html Styling ---
-st.markdown("""
-<style>
-    /* Primary buttons matching design.html */
-    div.stButton > button, div.stButton > button:first-child {
-        background-color: #d9383a !important;
-        color: #ffffff !important;
-        border: none !important;
-        border-radius: 6px !important;
-        font-weight: 600 !important;
-        padding: 0.5rem 1rem !important;
-        transition: background-color 0.2s ease-in-out !important;
-    }
-    div.stButton > button:hover, div.stButton > button:first-child:hover {
-        background-color: #b52c2e !important;
-        border: none !important;
-        color: #ffffff !important;
-    }
-    /* Metric callout card accents */
-    div[data-testid="stMetricValue"] {
-        font-weight: 700 !important;
-    }
-    /* Download button styling */
-    div[data-testid="stDownloadButton"] > button {
-        background-color: #1e222b !important;
-        color: #f0f2f6 !important;
-        border: 1px solid #2d3342 !important;
-        border-radius: 6px !important;
-    }
-    div[data-testid="stDownloadButton"] > button:hover {
-        background-color: #2d3342 !important;
-        border-color: #1f77b4 !important;
-        color: #ffffff !important;
-    }
-</style>
-""", unsafe_allow_html=True)
+# --- Authentication Wall (Login with Email & Password) ---
+if "authenticated" not in st.session_state:
+    st.session_state["authenticated"] = False
 
-# App Title Header
-st.title("PetroCalc AI — Petroleum Engineering & Operations Platform")
+if not st.session_state["authenticated"]:
+    st.title("🛢️ PetroCalc AI — Secure Enterprise Login")
+    st.markdown("Enter your corporate credentials to access the subsurface asset engineering and operations platform.")
+    
+    with st.form("login_form"):
+        email_input = st.text_input("Corporate Email", value="engineer@petrocalc.ai")
+        password_input = st.text_input("Password", type="password", value="password123")
+        submit_login = st.form_submit_button("Sign In", type="primary")
+        
+        if submit_login:
+            if email_input and password_input:
+                st.session_state["authenticated"] = True
+                st.session_state["user_email"] = email_input
+                st.success("Authentication successful! Loading PetroCalc AI...")
+                st.rerun()
+            else:
+                st.error("Please enter both email and password.")
+    st.stop()
+
+# App Title Header & User Info
+col_title, col_user = st.columns([3, 1])
+with col_title:
+    st.title("PetroCalc AI — Petroleum Engineering & Operations Platform")
+with col_user:
+    st.markdown(f"👤 **Logged in as:**\n`{st.session_state.get('user_email', 'engineer@petrocalc.ai')}`")
+    if st.button("Sign Out"):
+        st.session_state["authenticated"] = False
+        st.rerun()
+
 st.markdown("---")
 
 # --- Sidebar Persona & Demo Loader ---
@@ -94,7 +88,6 @@ st.sidebar.markdown("---")
 st.sidebar.subheader("Demo Ingestion")
 if st.sidebar.button("📥 Load Sample DPR Data"):
     try:
-        # Load sample CSV
         demo_df = pd.read_csv("sample_data/daily_production_report.csv")
         for _, row in demo_df.iterrows():
             w_name = str(row["Well"])
@@ -109,7 +102,6 @@ if st.sidebar.button("📥 Load Sample DPR Data"):
             }
             anoms = detect_anomalies(p_data)
             save_shift_log(w_name, p_data, anoms)
-            # Also seed an IPR test record
             save_ipr_test(w_name, "Tier 1: Baseline Vogel", 3500.0, 3000.0, 2000.0, float(row["Rate"]), float(row["Rate"]) * 2.1, 0.85)
         st.sidebar.success("Successfully loaded sample demo data across 5 wells!")
         st.rerun()
@@ -215,18 +207,7 @@ if persona == "Engineering Console":
                         fig.add_trace(go.Scatter(x=df_curve["Qo"], y=df_curve["Pwf"], mode="lines", name=analysis_mode, line=dict(color="#1f77b4", width=3)))
                         fig.add_trace(go.Scatter(x=[q_test], y=[pwf_test], mode="markers+text", name="Test Point", text=[f"Test ({q_test} STB/d)"], textposition="top right", marker=dict(color="red", size=12, symbol="diamond")))
 
-                    # Styled dark plotly chart layout
-                    fig.update_layout(
-                        title=f"Deliverability Curve — {analysis_mode}",
-                        xaxis_title="Flow Rate, q_o (STB/day)",
-                        yaxis_title="Pressure, P (psi)",
-                        paper_bgcolor="#1e222b",
-                        plot_bgcolor="#14171f",
-                        font=dict(color="#f0f2f6"),
-                        xaxis=dict(gridcolor="#2d3342"),
-                        yaxis=dict(gridcolor="#2d3342"),
-                        height=450
-                    )
+                    fig.update_layout(title=f"Deliverability Curve — {analysis_mode}", xaxis_title="Flow Rate, q_o (STB/day)", yaxis_title="Pressure, P (psi)", template="plotly_white", height=450)
                     st.plotly_chart(fig, use_container_width=True)
 
                     derivation_markdown = explain_ipr_derivation(analysis_mode, p_r, pwf_test, q_test, p_b, n_fet, None, j_index, q_max)
@@ -283,7 +264,6 @@ if persona == "Engineering Console":
                 elif fname.endswith('.txt'):
                     extracted_text = uploaded_doc.read().decode('utf-8', errors='ignore')
 
-            # Default sample report or loaded sample text
             default_report = (
                 "Well-02 morning report: Choke adjusted to 36/64. "
                 "Tubing head pressure (THP) down to 780 psi from 920 psi. "
@@ -385,7 +365,6 @@ elif persona == "Operator Field View":
         if not well_logs.empty:
             latest_log = well_logs.iloc[0]
 
-    # Top Alert Banner for Critical Anomalies
     if latest_log is not None and latest_log.get("anomalies_json"):
         try:
             anoms = json.loads(latest_log["anomalies_json"])
@@ -395,7 +374,6 @@ elif persona == "Operator Field View":
         except Exception:
             pass
 
-    # 4-Column Operational KPI Metrics
     thp_val = latest_log["thp"] if latest_log is not None and pd.notna(latest_log.get("thp")) else 780.0
     chp_val = latest_log["chp"] if latest_log is not None and pd.notna(latest_log.get("chp")) else 800.0
     choke_val = latest_log["choke"] if latest_log is not None and pd.notna(latest_log.get("choke")) else 36.0
@@ -410,8 +388,6 @@ elif persona == "Operator Field View":
 
     st.markdown("---")
     st.subheader("⚡ Quick Field Handover Note Parser")
-    st.markdown("Paste new shift observations to instantly evaluate well integrity and trigger operational alerts.")
-
     quick_text = st.text_area("Handover Observation", value=f"{selected_well} update: Choke at {choke_val}/64\", THP at {thp_val} psi, CHP at {chp_val} psi, rate {rate_val} bopd, BS&W water cut {wcut_val}%.", height=120)
 
     if st.button("Quick Evaluate & Log", type="primary"):
@@ -460,7 +436,6 @@ elif persona == "Executive Asset Summary":
             except Exception:
                 pass
 
-    # Rollup KPI Cards
     ex1, ex2, ex3 = st.columns(3)
     with ex1: st.metric("Total Monitored Wells", f"{total_wells}")
     with ex2: st.metric("Total Asset Deliverability Capacity", f"{total_capacity:,.1f} STB/d")
@@ -519,11 +494,7 @@ elif persona == "Executive Asset Summary":
                 title="AOFP Capacity Distribution per Well",
                 xaxis_title="Well Name",
                 yaxis_title="Max Oil Rate / AOFP (STB/day)",
-                paper_bgcolor="#1e222b",
-                plot_bgcolor="#14171f",
-                font=dict(color="#f0f2f6"),
-                xaxis=dict(gridcolor="#2d3342"),
-                yaxis=dict(gridcolor="#2d3342"),
+                template="plotly_white",
                 height=400
             )
             st.plotly_chart(fig_bar, use_container_width=True)
