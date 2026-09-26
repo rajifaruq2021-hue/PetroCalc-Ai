@@ -42,7 +42,7 @@ Subsurface and production operations require continuous balancing between reserv
 - **Tier 3: Fetkovich Backpressure Equation**
   $$q_o = C(P_R^2 - P_{wf}^2)^n$$
 - **Tier 4: System Nodal Integration**
-  - Intersects reservoir inflow (IPR) with tubing outflow (VLP) to solve operating point ($q_{\text{oper}}, P_{\text{wf},\text{oper}}$).
+  - Intersects reservoir inflow (IPR) with tubing outflow (VLP) to solve operating point ($q_{\text{oper}}, P_{\text{wf},\text{oper}}).
 
 ---
 
@@ -50,7 +50,20 @@ Subsurface and production operations require continuous balancing between reserv
 
 - **Multi-Format Intake:** Ingests `.pdf`, `.docx`, `.xlsx`, `.xls`, `.csv`, and `.txt` files.
 - **Regex Parameter Normalization:** Automatically extracts Tubing Head Pressure (THP), Casing Head Pressure (CHP), Choke Size, Liquid Rate, and Water Cut (% BS&W).
-- **SQLite Database Persistence:** Local workspace persistence storing shift logs, extracted anomalies, and well test records in `petrocalc.db`.
+- **SQLite & PostgreSQL Database Persistence:** Supports local workspace persistence and production containerized PostgreSQL deployments.
+
+---
+
+## 🐳 Production Deployment (Docker, PostgreSQL & Caddy)
+
+PetroCalc AI includes a complete containerized stack featuring App, PostgreSQL, and Caddy reverse proxy:
+
+1. **Build and Run with Docker Compose:**
+   ```bash
+   docker-compose up --build -d
+   ```
+2. **Access Application:**
+   - App: `http://localhost` (via Caddy reverse proxy) or `http://localhost:8501` (direct).
 
 ---
 
