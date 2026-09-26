@@ -42,6 +42,43 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# --- Global CSS: Injected to Match design.html Styling ---
+st.markdown("""
+<style>
+    /* Primary buttons matching design.html */
+    div.stButton > button, div.stButton > button:first-child {
+        background-color: #d9383a !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 6px !important;
+        font-weight: 600 !important;
+        padding: 0.5rem 1rem !important;
+        transition: background-color 0.2s ease-in-out !important;
+    }
+    div.stButton > button:hover, div.stButton > button:first-child:hover {
+        background-color: #b52c2e !important;
+        border: none !important;
+        color: #ffffff !important;
+    }
+    /* Metric callout card accents */
+    div[data-testid="stMetricValue"] {
+        font-weight: 700 !important;
+    }
+    /* Download button styling */
+    div[data-testid="stDownloadButton"] > button {
+        background-color: #1e222b !important;
+        color: #f0f2f6 !important;
+        border: 1px solid #2d3342 !important;
+        border-radius: 6px !important;
+    }
+    div[data-testid="stDownloadButton"] > button:hover {
+        background-color: #2d3342 !important;
+        border-color: #1f77b4 !important;
+        color: #ffffff !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # App Title Header
 st.title("PetroCalc AI — Petroleum Engineering & Operations Platform")
 st.markdown("---")
@@ -178,7 +215,18 @@ if persona == "Engineering Console":
                         fig.add_trace(go.Scatter(x=df_curve["Qo"], y=df_curve["Pwf"], mode="lines", name=analysis_mode, line=dict(color="#1f77b4", width=3)))
                         fig.add_trace(go.Scatter(x=[q_test], y=[pwf_test], mode="markers+text", name="Test Point", text=[f"Test ({q_test} STB/d)"], textposition="top right", marker=dict(color="red", size=12, symbol="diamond")))
 
-                    fig.update_layout(title=f"Deliverability Curve — {analysis_mode}", xaxis_title="Flow Rate, q_o (STB/day)", yaxis_title="Pressure, P (psi)", template="plotly_white", height=450)
+                    # Styled dark plotly chart layout
+                    fig.update_layout(
+                        title=f"Deliverability Curve — {analysis_mode}",
+                        xaxis_title="Flow Rate, q_o (STB/day)",
+                        yaxis_title="Pressure, P (psi)",
+                        paper_bgcolor="#1e222b",
+                        plot_bgcolor="#14171f",
+                        font=dict(color="#f0f2f6"),
+                        xaxis=dict(gridcolor="#2d3342"),
+                        yaxis=dict(gridcolor="#2d3342"),
+                        height=450
+                    )
                     st.plotly_chart(fig, use_container_width=True)
 
                     derivation_markdown = explain_ipr_derivation(analysis_mode, p_r, pwf_test, q_test, p_b, n_fet, None, j_index, q_max)
@@ -471,7 +519,11 @@ elif persona == "Executive Asset Summary":
                 title="AOFP Capacity Distribution per Well",
                 xaxis_title="Well Name",
                 yaxis_title="Max Oil Rate / AOFP (STB/day)",
-                template="plotly_white",
+                paper_bgcolor="#1e222b",
+                plot_bgcolor="#14171f",
+                font=dict(color="#f0f2f6"),
+                xaxis=dict(gridcolor="#2d3342"),
+                yaxis=dict(gridcolor="#2d3342"),
                 height=400
             )
             st.plotly_chart(fig_bar, use_container_width=True)
