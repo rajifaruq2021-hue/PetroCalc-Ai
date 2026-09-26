@@ -87,3 +87,18 @@ The deliverability suite supports selectable analytical complexities, allowing e
 2. **Log Extraction:** Raw unstructured shift notes must correctly parse choke size, THP, and flow rate into their corresponding numerical fields with high reliability.
 3. **Anomaly Flagging:** Physics rulebook must flag rapid pressure/choke discrepancies immediately upon log ingestion.
 4. **Usability:** Users can switch between calculation complexities and dashboard personas with instantaneous recalculation and plot updates.
+---
+
+## 5. Agent Steering Decisions & Tool Implementation Notes
+
+### Task 1: Architectural & Tool Choice Steering
+* **Framework:** Streamlit (Python) for rapid multi-persona scientific dashboard deployment.
+* **Database & Persistence:** SQLite local file database (`petrocalc.db`) with zero external cloud dependencies for Phase 1 local prototype testing.
+* **Authentication:** Lightweight session-state persona selector (Operator, Engineer, Asset Manager) to test multi-role views without auth friction.
+* **File Storage:** In-memory BytesIO streaming for document exports (PDF, DOCX, XLSX, CSV).
+* **Steered Decision:** Shifted document parsing engine from complex external OCR services to local, deterministic parsing via `pypdf`, `python-docx`, and regex normalization. This eliminates third-party API keys and latency for offline rig environments.
+
+### Task 2: Design Refinements Documented
+* **Color Palette & Theme:** Adopted an industrial dark palette (`#0e1117` background, `#1e222b` surface cards) with safety-accent crimson (`#d9383a`) and Plotly scientific blues.
+* **Typography:** Clean, legible sans-serif (`Inter`) with monospace code typography for petroleum engineering equations and parameter readouts.
+* **Button & Input Styling:** High-contrast bordered inputs with clear focus states to ensure readability under field conditions.

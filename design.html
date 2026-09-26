@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PetroCalc AI — Design Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0e1117;
+      --bg-surface: #1e222b;
+      --accent-crimson: #d9383a;
+      --accent-blue: #1f77b4;
+      --accent-green: #2ca02c;
+      --text-main: #f0f2f6;
+      --text-muted: #9ba1b0;
+      --border-subtle: #2d3342;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      margin: 0;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 820px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 32px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 26px;
+      color: #ffffff;
+      font-weight: 700;
+    }
+    p {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(217, 56, 58, 0.15);
+      color: var(--accent-crimson);
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+    input[type="text"], input[type="number"], select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 14px;
+      background: #14171f;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      color: #ffffff;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus {
+      border-color: var(--accent-blue);
+    }
+    .btn-primary {
+      background-color: var(--accent-crimson);
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary:hover {
+      background-color: #b52c2e;
+    }
+    .metric-card {
+      background: #14171f;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 24px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .metric-val {
+      font-size: 22px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <span class="badge">Petroleum Subsurface & Operations UI</span>
+    <h1>PetroCalc AI — Design Preview</h1>
+    <p>This design prototype reflects the high-contrast engineering dark-theme optimized for offshore control rooms and engineering workstations.</p>
+
+    <div class="form-group">
+      <label for="wellname">Well Identifier</label>
+      <input type="text" id="wellname" value="Well-01 (Delta Saturated Reservoir)" readonly>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      <div class="form-group">
+        <label for="pr">Static Reservoir Pressure, PR (psi)</label>
+        <input type="number" id="pr" value="3500">
+      </div>
+      <div class="form-group">
+        <label for="pwf">Test Flowing Pressure, Pwf (psi)</label>
+        <input type="number" id="pwf" value="2800">
+      </div>
+    </div>
+
+    <button class="btn-primary">Calculate Deliverability Curve</button>
+
+    <div class="metric-card">
+      <div>
+        <label style="color: var(--text-muted); margin:0;">Baseline Vogel AOFP</label>
+        <div class="metric-val">1,921.6 STB/d</div>
+      </div>
+      <div>
+        <label style="color: var(--text-muted); margin:0;">Productivity Index (J)</label>
+        <div class="metric-val" style="color: #4ade80;">0.80 STB/d/psi</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
