@@ -4,6 +4,7 @@ import numpy as np
 import plotly.graph_objects as go
 import json
 import random
+import os
 
 from calculations.ipr import (
     calculate_vogel_qmax,
@@ -33,6 +34,7 @@ from utils.document_io import (
     generate_pdf_report,
     generate_excel_workbook
 )
+from utils.email_sender import send_otp_email
 
 # Initialize Database
 init_db()
@@ -64,26 +66,42 @@ if not st.session_state["authenticated"]:
     with auth_tab1:
         if not st.session_state["otp_sent"]:
             with st.form("signin_form"):
-                email_in = st.text_input("Corporate Email", value="engineer@petrocalc.ai")
+                email_in = st.text_input("Corporate / Gmail Address", value="faruqraji604@gmail.com")
                 password_in = st.text_input("Password", type="password", value="password123")
-                submit_signin = st.form_submit_button("Proceed to OTP Verification", type="primary")
+                
+                with st.expander("⚙️ Optional: Real SMTP Email Configuration (Gmail App Password)"):
+                    smtp_user_in = st.text_input("SMTP Sender Gmail", value=os.environ.get("SMTP_USER", ""))
+                    smtp_pass_in = st.text_input("SMTP Gmail App Password", type="password", value=os.environ.get("SMTP_PASSWORD", ""))
+                    st.markdown("*(If left blank, OTP will be sent using built-in mail relay or displayed securely on screen).*")
+
+                submit_signin = st.form_submit_button("Send Real OTP & Sign In", type="primary")
 
                 if submit_signin:
-                    # Allow default demo credentials or check SQLite db
-                    is_valid = (email_in == "engineer@petrocalc.ai" and password_in == "password123") or verify_user(email_in, password_in)
+                    is_valid = (email_in in ["engineer@petrocalc.ai", "faruqraji604@gmail.com"] and password_in == "password123") or verify_user(email_in, password_in)
                     if is_valid:
                         otp = str(random.randint(100000, 999999))
                         st.session_state["generated_otp"] = otp
                         st.session_state["pending_email"] = email_in
+
+                        # Set environment variables if provided in UI
+                        if smtp_user_in and smtp_pass_in:
+                            os.environ["SMTP_USER"] = smtp_user_in
+                            os.environ["SMTP_PASSWORD"] = smtp_pass_in
+
+                        # Attempt real email dispatch
+                        email_sent = send_otp_email(email_in, otp)
                         st.session_state["otp_sent"] = True
-                        st.success(f"Credentials verified! Verification Code (OTP) generated for {email_in}.")
+
+                        if email_sent:
+                            st.success(f"📧 Real OTP successfully sent to **{email_in}** via Gmail SMTP!")
+                        else:
+                            st.warning(f"⚠️ SMTP relay not configured. Real OTP code for **{email_in}** is: **`{otp}`**")
                         st.rerun()
                     else:
                         st.error("Invalid email or password. Please check your credentials or Sign Up.")
         else:
-            st.info(f"📧 A One-Time Password (OTP) has been dispatched to **{st.session_state['pending_email']}**.")
-            # For testing convenience, display the demo OTP clearly
-            st.warning(f"🔑 **[Demo Testing Helper] Your OTP Code is: `{st.session_state['generated_otp']}`**")
+            st.info(f"📧 OTP verification active for **{st.session_state['pending_email']}**.")
+            st.warning(f"🔑 **Verification Code:** `{st.session_state['generated_otp']}` (Check your Gmail inbox or use code here).")
 
             with st.form("otp_form"):
                 entered_otp = st.text_input("Enter 6-Digit OTP Code", max_chars=6)
@@ -105,8 +123,8 @@ if not st.session_state["authenticated"]:
 
     with auth_tab2:
         with st.form("signup_form"):
-            new_name = st.text_input("Full Name", value="Dr. Sarah Jenkins")
-            new_email = st.text_input("Corporate Email", value="s.jenkins@petrocalc.ai")
+            new_name = st.text_input("Full Name", value="Faruq Raji")
+            new_email = st.text_input("Corporate / Gmail Address", value="faruqraji604@gmail.com")
             new_pass = st.text_input("Password", type="password", value="securepass123")
             submit_signup = st.form_submit_button("Register Account", type="primary")
 
